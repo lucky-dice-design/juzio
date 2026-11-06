@@ -14,7 +14,7 @@ const limits = new Map();
 const publicToken = process.env.PUBLIC_SERVICE_TOKEN;
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || '0.0.0.0';
-const protectedPages = new Set(['/team', '/raumliste', '/statistik', '/theke', '/abstimmung-team', '/qr']);
+const protectedPages = new Set(['/team', '/raumliste', '/statistik', '/theke', '/kassen', '/abstimmung-team', '/qr']);
 const pages = new Set(['/', '/login', '/abstimmung', '/datenschutz', ...protectedPages]);
 const assets = new Set(['/app.js', '/styles.css', '/manifest.json']);
 // Nur vorhandene Browsermodule in den öffentlichen Modulordnern ausliefern.
@@ -212,6 +212,18 @@ export function createApp() {
           statisticUpdates.set(id,update);
           try { return json(res,200,await update); }
           finally { if (statisticUpdates.get(id) === update) statisticUpdates.delete(id); }
+        }
+        if (p === '/api/staff/cash-entries') {
+          if (req.method === 'GET') return json(res,200,await api('/items/cash_entries?sort=-booking_date,-created_at&limit=-1'));
+          const b = await body(req);
+          if (!['counter','general'].includes(b.cash_register) || !['income','expense'].includes(b.direction)) fail(400,'Bitte Kasse und Buchungsart auswählen.');
+          const purpose = text(b.purpose,240).trim();
+          if (!purpose) fail(400,'Bitte einen Verwendungszweck angeben.');
+          const entry = { booking_date:date(b.booking_date), cash_register:b.cash_register, direction:b.direction,
+            amount_cents:integer(b.amount_cents,1,100000000), purpose, receipt:text(b.receipt,120), note:text(b.note,1200), request_key:uuid(b.request_key) };
+          try { await api('/items/cash_entries','POST',entry); }
+          catch(e) { if (e.code !== 'RECORD_NOT_UNIQUE') throw e; }
+          return json(res,201,{ok:true});
         }
         if (p === '/api/staff/statistics') {
           if (req.method === 'GET') return json(res,200,await api('/items/visitor_statistics?sort=-visit_date,-created_at&limit=-1'));

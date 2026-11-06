@@ -7,6 +7,7 @@ import { loginPage } from './pages/login.js';
 import { teamPage } from './pages/team.js';
 import { entriesPage } from './pages/raumliste.js';
 import { statsPage } from './pages/statistik.js';
+import { cashPage } from './pages/kassen.js';
 import { salesPage } from './pages/theke.js';
 import { votePage } from './pages/abstimmung.js';
 import { pollTeamPage } from './pages/abstimmung-team.js';
@@ -23,6 +24,7 @@ const routes = {
   '/raumliste': entriesPage,
   '/statistik': statsPage,
   '/theke': salesPage,
+  '/kassen': cashPage,
   '/abstimmung': votePage,
   '/abstimmung-team': pollTeamPage,
   '/qr': qrPage,

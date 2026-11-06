@@ -11,6 +11,7 @@ export function renderNavigation(app, user, route) {
       ['/raumliste', 'Raumliste'],
       ['/statistik', 'Statistik'],
       ['/theke', 'Theke'],
+      ['/kassen', 'Kassen'],
       ['/abstimmung-team', 'Abstimmung'],
       ['/qr', 'QR-Codes'],
     ]

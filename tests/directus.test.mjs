@@ -21,6 +21,18 @@ test('Directus: Teamlogin, Eintragung, Statistik, Verkauf, Abstimmung und Rechte
     const req=async(path,body,cookie='')=>{const r=await fetch(base+path,{method:body?'POST':'GET',headers:{Origin:base,...(body?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined});const data=await r.json();return {r,data,cookie:r.headers.get('set-cookie')?.split(';')[0]};};
     const login=await req('/api/login',{email:user.email,password});assert.equal(login.r.status,200,JSON.stringify(login.data));const staff=login.cookie;
     assert.equal((await req('/api/me',null,staff)).data.user.id,user.id);
+    const cash={booking_date:'2026-11-06',cash_register:'counter',direction:'income',amount_cents:1234,purpose:suffix,request_key:randomUUID()};
+    assert.equal((await req('/api/staff/cash-entries',cash)).r.status,401);
+    assert.equal((await req('/api/staff/cash-entries',{...cash,amount_cents:-1},staff)).r.status,400);
+    assert.equal((await req('/api/staff/cash-entries',cash,staff)).r.status,201);
+    const cashRows=await admin(`/items/cash_entries?filter[request_key][_eq]=${cash.request_key}`);
+    for(const row of cashRows) cleanup.push(()=>admin(`/items/cash_entries/${row.id}`,'DELETE'));
+    assert.equal((await req('/api/staff/cash-entries',cash,staff)).r.status,201);
+    const cashList=await req('/api/staff/cash-entries',null,staff);
+    assert.equal(cashList.r.status,200);
+    assert.equal(cashList.data.filter(row=>row.request_key===cash.request_key).length,1);
+    assert.equal(cashRows[0].amount_cents,1234);
+
     assert.match(login.r.headers.get('set-cookie'),/HttpOnly/);
     assert.match(login.r.headers.get('set-cookie'),/SameSite=Strict/);
     assert.equal((await req('/api/room-entries',{room:room.id,name:'Test',guests:'Gast',visit_date:'2026-10-06',visit_time:'15:30'})).r.status,201);
@@ -36,11 +48,11 @@ test('Directus: Teamlogin, Eintragung, Statistik, Verkauf, Abstimmung und Rechte
     assert.equal((await req('/api/staff/entries',{...editedEntry,visit_time:'25:90'},staff)).r.status,400);
     assert.equal((await req('/api/staff/entries',{...editedEntry,name:' '},staff)).r.status,400);
     assert.equal((await req('/api/staff/rooms',null,staff)).data.some(r=>r.id===room.id),true);
-    const editedStat={id:stat.id,visit_date:'2026-10-07',visit_time:'17:15',age_group:'16–18',gender:'divers',quantity:5,note:'Korrigierte Statistik'};
+    const editedStat={id:stat.id,visit_date:'2026-10-07',visit_time:'17:15',age_group:'15–18',gender:'divers',quantity:5,note:'Korrigierte Statistik'};
     assert.equal((await req('/api/staff/statistics',editedStat)).r.status,401);
     assert.equal((await req('/api/staff/statistics',editedStat,staff)).r.status,200);
     const updatedStat=(await req('/api/staff/statistics',null,staff)).data.find(r=>r.id===stat.id);
-    assert.equal(updatedStat.visit_time,'17:15');assert.equal(updatedStat.quantity,5);assert.equal(updatedStat.age_group,'16–18');assert.equal(updatedStat.note,editedStat.note);
+    assert.equal(updatedStat.visit_time,'17:15');assert.equal(updatedStat.quantity,5);assert.equal(updatedStat.age_group,'15–18');assert.equal(updatedStat.note,editedStat.note);
     assert.equal((await req('/api/staff/statistics',{...editedStat,quantity:0},staff)).r.status,400);
     assert.equal((await req('/api/staff/statistics',{...editedStat,visit_date:'2026-02-31'},staff)).r.status,400);
     assert.equal((await req('/api/staff/statistics',{...editedStat,visit_time:'25:90'},staff)).r.status,400);

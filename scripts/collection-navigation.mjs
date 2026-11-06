@@ -9,6 +9,9 @@ const groups = [
     ['products', 'Produkte', 'local_cafe'],
     ['sales', 'Verkäufe & Pfand', 'receipt_long']
   ]],
+  ['juze_cash', 'Kassenverwaltung', 'account_balance_wallet', '#00897B', [
+    ['cash_entries', 'Kassenbuch', 'receipt_long']
+  ]],
   ['juze_polls', 'Abstimmungen', 'how_to_vote', '#9C27B0', [
     ['polls', 'Abstimmungen', 'how_to_vote'],
     ['poll_options', 'Angebote zur Auswahl', 'list_alt'],

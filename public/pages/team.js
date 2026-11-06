@@ -5,6 +5,7 @@ export function teamPage(app, user) {
   const links = [
     ['/raumliste', 'Raumliste', 'Alle Raumeintragungen ansehen.'],
     ['/statistik', 'Besucherstatistik', 'Besuche erfassen und auswerten.'],
+    ['/kassen', 'Kassenverwaltung', 'Ein- und Ausgaben beider Kassen buchen.'],
     ['/theke', 'Thekenverkauf', 'Angebote buchen und Umsatz sehen.'],
     ['/abstimmung-team', 'Abstimmung', 'Wünsche für nächste Woche auswerten.'],
     ['/qr', 'QR-Codes', 'Links für Jugendliche ausdrucken.'],

@@ -30,6 +30,7 @@ const schemas = {
   privacy_pages: [field('slug','string',{is_unique:true}),field('title'),field('content','text'),field('status','string',{default_value:'draft'}),{field:'updated_at',type:'timestamp',meta:{special:['date-updated'],readonly:true},schema:{}}],
   rooms: [field('name', 'string', { is_nullable: false }), field('active', 'boolean', { default_value: true })],
   room_entries: [field('visit_date', 'date'), field('visit_time'), field('room', 'uuid'), field('room_name'), field('name'), field('guests', 'text')],
+  cash_entries: [field('booking_date', 'date'), field('cash_register'), field('direction'), field('amount_cents', 'integer'), field('purpose'), field('receipt'), field('note', 'text'), field('request_key', 'string', { is_unique: true })],
   visitor_statistics: [field('visit_date', 'date'), field('visit_time'), field('age_group'), field('gender'), field('quantity', 'integer'), field('note', 'text')],
   products: [field('stock_quantity', 'integer'), field('stock_counted_at', 'timestamp'), field('stock_warning', 'integer', { default_value: 5 }), field('name'), field('price_cents', 'integer'), field('has_deposit', 'boolean', { default_value: false }), field('deposit_cents', 'integer', { default_value: 25 }), field('active', 'boolean', { default_value: true })],
   sales: [field('kind', 'string', { default_value: 'sale' }), field('product', 'uuid'), field('product_name'), field('price_cents', 'integer'), field('quantity', 'integer'), field('staff', 'uuid'), field('request_key', 'string', { is_unique: true })],
@@ -49,6 +50,11 @@ for (const name of ['voter_key', 'network_key']) {
   if (voteFields.some(f => f.field === name)) await api(`/fields/votes/${name}`, 'PATCH', { schema: { is_nullable: true }, meta: { hidden: true, required: false } });
 }
 await api('/fields/visitor_statistics/age_group', 'PATCH', { meta: { interface: 'select-dropdown', options: { choices: ['bis zu 14 Jahre', '15–18', '19–21', '22–27', 'über 27', 'keine Angabe'].map(value => ({ text: value, value })) } } });
+for (const [name, choices] of [
+  ['cash_register', [['counter', 'Thekenkasse'], ['general', 'Allgemeine Kasse']]],
+  ['direction', [['income', 'Einnahme'], ['expense', 'Ausgabe']]]
+]) await api(`/fields/cash_entries/${name}`, 'PATCH', { meta: { interface: 'select-dropdown', required: true, options: { choices: choices.map(([value, text]) => ({ value, text })) } } });
+await api('/fields/cash_entries/amount_cents', 'PATCH', { meta: { required: true, note: 'Betrag in Cent, immer positiv (100 = 1 Euro).', validation: { amount_cents: { _gt: 0 } } } });
 await organizeCollections(api);
 await setupVisitorViews(api);
 await setupBranding(api);
