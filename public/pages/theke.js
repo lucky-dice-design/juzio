@@ -1,3 +1,4 @@
+import { parseCashAmount } from '../lib/cash.js';
 import { api } from '../lib/api.js';
 import { esc, money, uid } from '../lib/format.js';
 import { heading, table, empty, safe } from '../lib/ui.js';
@@ -37,6 +38,14 @@ export async function salesPage(app) {
     ) +
     /* HTML */ `
       <div id="productCards" class="dashboard-grid"></div>
+      <form id="specialSale" class="panel form-panel stats-entry">
+        <h2>Spontanes Sonderangebot</h2>
+        <label>Name<input name="name" maxlength="120" required></label>
+        <label>Preis pro Stück (€)<input name="amount" inputmode="decimal" required></label>
+        <label>Anzahl<input name="quantity" type="number" min="1" max="1000" value="1" required></label>
+        <p>Einmaliger Verkauf ohne Pfand. Wird nicht im Produktkatalog gespeichert.</p>
+        <button class="primary-button">Sonderangebot buchen</button><p role="status"></p>
+      </form>
       <form id="depositReturn" class="panel form-panel stats-entry">
         <h2>Pfand zurückzahlen</h2>
         <label>
@@ -73,6 +82,26 @@ export async function salesPage(app) {
       <div id="salesSummary" class="summary-grid"></div>
       <div id="salesRows"></div>
     `;
+  const specialForm = app.querySelector('#specialSale');
+  let specialKey = uid();
+  specialForm.onsubmit = async event => {
+    event.preventDefault();
+    const button = specialForm.querySelector('button'), status = specialForm.querySelector('[role="status"]');
+    if (button.disabled) return;
+    button.disabled = true;
+    try {
+      const data = Object.fromEntries(new FormData(specialForm));
+      const price = parseCashAmount(data.amount);
+      if (price > 100000) throw new Error('Der Stückpreis darf höchstens 1.000 Euro betragen.');
+      await api('/api/staff/special-sales', { name:data.name, price_cents:price, quantity:Number(data.quantity), request_key:specialKey });
+      specialKey = uid();
+      specialForm.reset();
+      status.textContent = 'Sonderangebot gebucht.';
+      rows = await api('/api/staff/sales');
+      render();
+    } catch(error) { status.textContent = error.message; }
+    finally { button.disabled = false; }
+  };
   const render = () => {
     const f = filter(rows, 'created_at'),
       sum = salesSummary(f);

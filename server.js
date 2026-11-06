@@ -252,6 +252,15 @@ export function createApp() {
           await api(`/items/products/${uuid(b.id)}`,'PATCH',{has_deposit:b.has_deposit,deposit_cents:integer(b.deposit_cents,1,100000)});
           return json(res,200,{ok:true});
         }
+        if (p === '/api/staff/special-sales' && req.method === 'POST') {
+          const b = await body(req), request_key = uuid(b.request_key);
+          const name = text(b.name,120).trim();
+          if (!name) fail(400,'Bitte einen Angebotsnamen eingeben.');
+          const entry = { kind:'sale', product_name:name, price_cents:integer(b.price_cents,1,100000), quantity:integer(b.quantity,1,1000), staff:s.user.id, request_key };
+          try { await api('/items/sales','POST',entry); }
+          catch(e) { if (e.code !== 'RECORD_NOT_UNIQUE') throw e; }
+          return json(res,201,{ok:true});
+        }
         if (p === '/api/staff/sales') {
           if (req.method === 'GET') return json(res,200,await api('/items/sales?sort=-created_at&limit=-1'));
           const b = await body(req), request_key = uuid(b.request_key);

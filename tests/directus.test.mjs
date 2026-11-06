@@ -21,6 +21,16 @@ test('Directus: Teamlogin, Eintragung, Statistik, Verkauf, Abstimmung und Rechte
     const req=async(path,body,cookie='')=>{const r=await fetch(base+path,{method:body?'POST':'GET',headers:{Origin:base,...(body?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined});const data=await r.json();return {r,data,cookie:r.headers.get('set-cookie')?.split(';')[0]};};
     const login=await req('/api/login',{email:user.email,password});assert.equal(login.r.status,200,JSON.stringify(login.data));const staff=login.cookie;
     assert.equal((await req('/api/me',null,staff)).data.user.id,user.id);
+    const special={name:'Sonderangebot '+suffix,price_cents:125,quantity:2,request_key:randomUUID()};
+    assert.equal((await req('/api/staff/special-sales',special)).r.status,401);
+    assert.equal((await req('/api/staff/special-sales',{...special,price_cents:-1},staff)).r.status,400);
+    assert.equal((await req('/api/staff/special-sales',special,staff)).r.status,201);
+    const specialRows=await admin(`/items/sales?filter[request_key][_eq]=${special.request_key}`);
+    for(const row of specialRows) cleanup.push(()=>admin(`/items/sales/${row.id}`,'DELETE'));
+    assert.equal((await req('/api/staff/special-sales',special,staff)).r.status,201);
+    assert.equal((await admin(`/items/sales?filter[request_key][_eq]=${special.request_key}`)).length,1);
+    assert.equal(specialRows[0].product_name,special.name);
+    assert.equal(specialRows[0].price_cents * specialRows[0].quantity,250);
     const cash={booking_date:'2026-11-06',cash_register:'counter',direction:'income',amount_cents:1234,purpose:suffix,request_key:randomUUID()};
     assert.equal((await req('/api/staff/cash-entries',cash)).r.status,401);
     assert.equal((await req('/api/staff/cash-entries',{...cash,amount_cents:-1},staff)).r.status,400);
