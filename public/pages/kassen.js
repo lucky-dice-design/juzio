@@ -21,13 +21,13 @@ export async function cashPage(app) {
       <label>Notiz (optional)<textarea name="note" maxlength="1200"></textarea></label>
       <button class="primary-button">Buchung speichern</button><p id="cash-status" role="status"></p>
     </form>
-    <section class="panel"><h2>Kassenbuch</h2>
+    <section class="panel cash-book"><h2>Kassenbuch</h2>
       <label>Kasse anzeigen<select id="cash-filter"><option value="">Beide Kassen</option>${Object.entries(registers).map(([v,l]) => `<option value="${v}">${l}</option>`).join('')}</select></label>
-      <div class="table-wrap"><table><thead><tr><th>Datum</th><th>Kasse</th><th>Zweck</th><th>Beleg</th><th>Einnahme</th><th>Ausgabe</th><th>Notiz</th></tr></thead><tbody id="cash-rows"></tbody></table></div>
+      <div class="table-scroll"><table><thead><tr><th>Datum</th><th>Kasse</th><th>Zweck</th><th>Beleg</th><th>Einnahme</th><th>Ausgabe</th><th>Notiz</th></tr></thead><tbody id="cash-rows"></tbody></table></div>
     </section>`;
   const filter = app.querySelector('#cash-filter');
   function render() {
-    app.querySelector('#cash-balances').innerHTML = Object.entries(registers).map(([key,label]) => `<div class="panel"><h2>${label}</h2><strong>${money(cashBalance(rows,key))}</strong><p>Saldo aller erfassten Buchungen</p></div>`).join('');
+    app.querySelector('#cash-balances').innerHTML = Object.entries(registers).map(([key,label]) => `<div class="panel cash-balance"><h2>${label}</h2><strong>${money(cashBalance(rows,key))}</strong><p>Saldo aller erfassten Buchungen</p></div>`).join('');
     const visible = rows.filter(r => !filter.value || r.cash_register === filter.value);
     app.querySelector('#cash-rows').innerHTML = visible.map(r => `<tr><td>${esc(dateText(r.booking_date))}</td><td>${esc(registers[r.cash_register] || r.cash_register)}</td><td>${esc(r.purpose)}</td><td>${esc(r.receipt)}</td><td>${r.direction === 'income' ? money(r.amount_cents) : '–'}</td><td>${r.direction === 'expense' ? money(r.amount_cents) : '–'}</td><td>${esc(r.note)}</td></tr>`).join('') || '<tr><td colspan="7">Noch keine Buchungen.</td></tr>';
   }
