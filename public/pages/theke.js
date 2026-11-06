@@ -38,7 +38,7 @@ export async function salesPage(app) {
     ) +
     /* HTML */ `
       <div id="productCards" class="dashboard-grid"></div>
-      <form id="specialSale" class="panel form-panel stats-entry">
+      <form id="specialSale" class="panel form-panel counter-form">
         <h2>Spontanes Sonderangebot</h2>
         <label>Name<input name="name" maxlength="120" required></label>
         <label>Preis pro Stück (€)<input name="amount" inputmode="decimal" required></label>
@@ -46,7 +46,7 @@ export async function salesPage(app) {
         <p>Einmaliger Verkauf ohne Pfand. Wird nicht im Produktkatalog gespeichert.</p>
         <button class="primary-button">Sonderangebot buchen</button><p role="status"></p>
       </form>
-      <form id="depositReturn" class="panel form-panel stats-entry">
+      <form id="depositReturn" class="panel form-panel counter-form">
         <h2>Pfand zurückzahlen</h2>
         <label>
           Pfand pro Stück (€)

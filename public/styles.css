@@ -493,3 +493,18 @@ code { overflow-wrap: anywhere; }
 .cash-balance h2, .cash-book h2 { margin-top: 0; }
 .cash-balance p { margin-bottom: 0; }
 .cash-book > label { display: grid; gap: 8px; margin-bottom: 20px; }
+
+/* Überschrift, Hinweis und Aktion stehen jeweils in einer eigenen Zeile. */
+.counter-form {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  align-items: end;
+  margin-top: 24px;
+}
+.counter-form > h2, .counter-form > p { grid-column: 1 / -1; margin: 0; }
+.counter-form > label { min-width: 0; align-self: end; }
+.counter-form > button { grid-column: 1 / -1; justify-self: start; max-width: 100%; }
+.counter-form > [role="status"]:empty { display: none; }
+@media (max-width: 780px) {
+  .counter-form { grid-template-columns: minmax(0, 1fr); }
+  .counter-form > button { justify-self: stretch; }
+}
