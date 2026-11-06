@@ -115,6 +115,7 @@ export async function salesPage(app) {
             <form class="panel form-panel product" data-product="${esc(p.id)}">
               <h2>${esc(p.name)}</h2>
               <strong>${money(p.price_cents)}</strong>
+              ${p.stock_remaining == null ? '' : `<p class="${p.stock_remaining <= (p.stock_warning ?? 5) ? 'stock-warning' : ''}" role="status">${p.stock_remaining === 0 ? 'Ausverkauft' : p.stock_remaining <= (p.stock_warning ?? 5) ? 'Bestand wird knapp' : 'Auf Lager'} · noch ${p.stock_remaining} Stück</p>`}
               <p>
                 ${p.has_deposit
                   ? `+ ${money(p.deposit_cents)} Pfand pro Stück · zusammen ${money(p.price_cents + p.deposit_cents)}`
@@ -165,6 +166,8 @@ export async function salesPage(app) {
           requestKey = null;
           status.textContent = 'Verkauf gebucht.';
           rows = await api('/api/staff/sales');
+          products = await api('/api/staff/products');
+          renderProducts();
           render();
         } catch (e) {
           status.textContent = e.message;

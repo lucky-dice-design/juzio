@@ -223,7 +223,18 @@ export function createApp() {
           return json(res,b.id ? 200 : 201,{ok:true});
         }
         if (p === '/api/staff/products') {
-          if (req.method === 'GET') return json(res,200,await api('/items/products?filter[active][_eq]=true&sort=name&limit=-1'));
+          if (req.method === 'GET') {
+            const [products, sales] = await Promise.all([
+              api('/items/products?filter[active][_eq]=true&sort=name&limit=-1'),
+              api('/items/sales?fields=product,quantity,kind,created_at&limit=-1')
+            ]);
+            return json(res,200,products.map(product => {
+              if (!Number.isInteger(product.stock_quantity) || product.stock_quantity < 0 || !product.stock_counted_at || !Number.isFinite(Date.parse(product.stock_counted_at))) return {...product, stock_remaining:null};
+              const sold = sales.filter(sale => sale.product === product.id && (!sale.kind || sale.kind === 'sale') && Date.parse(sale.created_at) > Date.parse(product.stock_counted_at))
+                .reduce((total, sale) => total + sale.quantity, 0);
+              return {...product, stock_remaining:Math.max(0, product.stock_quantity - sold)};
+            }));
+          }
           const b = await body(req);
           if (typeof b.has_deposit !== 'boolean') fail(400,'Bitte die Pfandauswahl prüfen.');
           await api(`/items/products/${uuid(b.id)}`,'PATCH',{has_deposit:b.has_deposit,deposit_cents:integer(b.deposit_cents,1,100000)});

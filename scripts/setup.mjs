@@ -30,7 +30,7 @@ const schemas = {
   rooms: [field('name', 'string', { is_nullable: false }), field('active', 'boolean', { default_value: true })],
   room_entries: [field('visit_date', 'date'), field('visit_time'), field('room', 'uuid'), field('room_name'), field('name'), field('guests', 'text')],
   visitor_statistics: [field('visit_date', 'date'), field('visit_time'), field('age_group'), field('gender'), field('quantity', 'integer'), field('note', 'text')],
-  products: [field('name'), field('price_cents', 'integer'), field('has_deposit', 'boolean', { default_value: false }), field('deposit_cents', 'integer', { default_value: 25 }), field('active', 'boolean', { default_value: true })],
+  products: [field('stock_quantity', 'integer'), field('stock_counted_at', 'timestamp'), field('stock_warning', 'integer', { default_value: 5 }), field('name'), field('price_cents', 'integer'), field('has_deposit', 'boolean', { default_value: false }), field('deposit_cents', 'integer', { default_value: 25 }), field('active', 'boolean', { default_value: true })],
   sales: [field('kind', 'string', { default_value: 'sale' }), field('product', 'uuid'), field('product_name'), field('price_cents', 'integer'), field('quantity', 'integer'), field('staff', 'uuid'), field('request_key', 'string', { is_unique: true })],
   polls: [field('title'), field('description', 'text'), field('starts_at', 'timestamp'), field('ends_at', 'timestamp'), field('week_of', 'date'), field('active', 'boolean', { default_value: false })],
   poll_options: [field('poll', 'uuid'), field('name'), field('description', 'text'), field('active', 'boolean', { default_value: true })],
@@ -54,6 +54,11 @@ await api('/fields/privacy_pages/status','PATCH',{meta:{interface:'select-dropdo
 await api('/fields/privacy_pages/content','PATCH',{meta:{note:'Klartext mit Absätzen. Platzhalter ergänzen und erst nach Freigabe veröffentlichen.'}});
 await api('/fields/products/has_deposit','PATCH',{meta:{interface:'boolean',options:{label:'Produkt mit Pfand'}}});
 await api('/fields/products/deposit_cents','PATCH',{meta:{note:'Pfand pro Stück in Cent, zusätzlich zum Produktpreis.'}});
+for (const [name, note] of [
+  ['stock_quantity', 'Gezählter Bestand in Stück. Leer lassen, um die Bestandsanzeige auszuschalten. Bei Nachlieferung den neuen Gesamtbestand und den Zählzeitpunkt eintragen.'],
+  ['stock_counted_at', 'Zeitpunkt der Bestandszählung. Verkäufe nach diesem Zeitpunkt werden automatisch abgezogen. Zusammen mit dem gezählten Bestand pflegen.'],
+  ['stock_warning', 'Warnung anzeigen, sobald höchstens so viele Stück übrig sind.']
+]) await api(`/fields/products/${name}`, 'PATCH', { meta: { note, ...(name === 'stock_counted_at' ? { interface: 'datetime' } : { validation: { [name]: { _gte: 0 } } }) } });
 // Directus zeigt verknüpfte Angebote als Auswahl statt als manuelle UUID-Eingabe.
 const relations = await api('/relations');
 for (const [collection, fieldName, related] of [['poll_options','poll','polls'],['votes','poll','polls'],['votes','option','poll_options'],['room_entries','room','rooms'],['sales','product','products']]) {
