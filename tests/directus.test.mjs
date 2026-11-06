@@ -26,7 +26,7 @@ test('Directus: Teamlogin, Eintragung, Statistik, Verkauf, Abstimmung und Rechte
     assert.equal((await req('/api/room-entries',{room:room.id,name:'Test',guests:'Gast',visit_date:'2026-10-06',visit_time:'15:30'})).r.status,201);
     const entries=(await req('/api/staff/entries',null,staff)).data;const entry=entries.find(e=>e.room===room.id);assert.equal(entry.name,'Test');cleanup.push(()=>admin('/items/room_entries/'+entry.id,'DELETE'));
     assert.equal((await req('/api/room-entries',{room:room.id,name:'Test',visit_date:'2026-02-31',visit_time:'25:90'})).r.status,400);
-    const stats=await req('/api/staff/statistics',{visit_date:'2026-10-06',visit_time:'15:30',age_group:'12–15',gender:'keine Angabe',quantity:2,note:suffix},staff);assert.equal(stats.r.status,201,JSON.stringify(stats.data));
+    const stats=await req('/api/staff/statistics',{visit_date:'2026-10-06',visit_time:'15:30',age_group:'15–18',gender:'keine Angabe',quantity:2,note:suffix},staff);assert.equal(stats.r.status,201,JSON.stringify(stats.data));
     const stat=(await admin(`/items/visitor_statistics?filter[note][_eq]=${suffix}`))[0];cleanup.push(()=>admin('/items/visitor_statistics/'+stat.id,'DELETE'));
     const editedEntry={id:entry.id,visit_date:'2026-10-07',visit_time:'16:45',room:room.id,name:'Korrigiert',guests:'Neue Gäste'};
     assert.equal((await req('/api/staff/entries',editedEntry)).r.status,401);

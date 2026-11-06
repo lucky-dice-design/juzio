@@ -22,10 +22,10 @@ function statsFields(editing = false) {
       />
     </label>
     ${select('age_group', 'Altersgruppe', [
-      'unter 12',
-      '12–15',
-      '16–18',
-      '19–27',
+      'bis zu 14 Jahre',
+      '15–18',
+      '19–21',
+      '22–27',
       'über 27',
       'keine Angabe',
     ])}${select('gender', 'Geschlecht', [

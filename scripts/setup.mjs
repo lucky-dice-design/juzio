@@ -1,3 +1,4 @@
+import { setupVisitorViews } from './visitor-views.mjs';
 import { privacyTemplate } from './privacy-template.mjs';
 import { directus } from './directus.mjs';
 import { organizeCollections } from './collection-navigation.mjs';
@@ -47,7 +48,9 @@ const voteFields = await api('/fields/votes');
 for (const name of ['voter_key', 'network_key']) {
   if (voteFields.some(f => f.field === name)) await api(`/fields/votes/${name}`, 'PATCH', { schema: { is_nullable: true }, meta: { hidden: true, required: false } });
 }
+await api('/fields/visitor_statistics/age_group', 'PATCH', { meta: { interface: 'select-dropdown', options: { choices: ['bis zu 14 Jahre', '15–18', '19–21', '22–27', 'über 27', 'keine Angabe'].map(value => ({ text: value, value })) } } });
 await organizeCollections(api);
+await setupVisitorViews(api);
 await setupBranding(api);
 await setupProductPriceSync(api);
 await api('/fields/privacy_pages/status','PATCH',{meta:{interface:'select-dropdown',options:{choices:[{text:'Entwurf',value:'draft'},{text:'Veröffentlicht',value:'published'}]}}});

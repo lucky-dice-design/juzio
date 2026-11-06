@@ -33,7 +33,8 @@ export const insightDashboards = [
       metric('Einträge mit Besuchern · gesamt', 'visitor_statistics', 'id', 'count', 24, { quantity: { _gt: 0 } }),
       series('Besuche pro Tag · letzte 3 Monate', 'visitor_statistics', 'visit_date', 'quantity', 'sum', 8),
       bar('Besuche nach Altersgruppe · gesamt', 'visitor_statistics', 'age_group', 'quantity', 'sum', 0, 24),
-      bar('Besuche nach Geschlechtsangabe · gesamt', 'visitor_statistics', 'gender', 'quantity', 'sum', 18, 24)
+      bar('Besuche nach Geschlechtsangabe · gesamt', 'visitor_statistics', 'gender', 'quantity', 'sum', 18, 24),
+      { ...series('Besuche pro Monat · letzte 12 Monate', 'visitor_statistics', 'visit_date', 'quantity', 'sum', 46), options: { ...series('', 'visitor_statistics', 'visit_date', 'quantity', 'sum', 46).options, precision: 'month', range: '1 year' } }
     ]
   },
   {
@@ -78,7 +79,7 @@ export const insightDashboards = [
   const layout = p.type === 'metric'
     ? { position_x: 1 + (p.position_x / 12) * 17, position_y: 1, width: 16, height: 8 }
     : p.type === 'time-series'
-      ? { position_x: 1, position_y: 10, width: 50, height: 18 }
+      ? { position_x: 1, position_y: p.position_y === 46 ? 48 : 10, width: 50, height: 18 }
       : { position_x: p.position_x === 0 ? 1 : 27, position_y: 29, width: p.width === 36 ? 50 : 24, height: 18 };
   return {
     ...p, ...layout, id, dashboard: idFor(d.key), icon: d.icon, color: d.color,

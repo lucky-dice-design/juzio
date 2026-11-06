@@ -216,7 +216,7 @@ export function createApp() {
         if (p === '/api/staff/statistics') {
           if (req.method === 'GET') return json(res,200,await api('/items/visitor_statistics?sort=-visit_date,-created_at&limit=-1'));
           const b = await body(req);
-          if (!['unter 12','12–15','16–18','19–27','über 27','keine Angabe'].includes(b.age_group) || !['weiblich','männlich','divers','keine Angabe'].includes(b.gender)) fail(400,'Altersgruppe und Geschlecht auswählen.');
+          if (!['bis zu 14 Jahre','15–18','19–21','22–27','über 27','keine Angabe'].includes(b.age_group) || !['weiblich','männlich','divers','keine Angabe'].includes(b.gender)) fail(400,'Altersgruppe und Geschlecht auswählen.');
           const visit_time = text(b.visit_time,20);
           if (visit_time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(visit_time)) fail(400,'Bitte eine gültige Uhrzeit eingeben.');
           await api(b.id ? `/items/visitor_statistics/${uuid(b.id)}` : '/items/visitor_statistics',b.id ? 'PATCH' : 'POST',{visit_date:date(b.visit_date),...(b.visit_time !== undefined ? {visit_time:visit_time || null} : {}),age_group:b.age_group,gender:b.gender,quantity:integer(b.quantity,1,1000),note:text(b.note,1200)});
